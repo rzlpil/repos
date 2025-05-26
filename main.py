@@ -3,7 +3,7 @@ import pandas as pd
 import openpyxl
 
 # Load baseline data
-baseline = pd.read_excel('23 Mei Data Baseline semua kapal.xlsx',engine="openpyxl")
+baseline = pd.read_excel('23 Mei Data Baseline semua kapal.xlsx')
 distance_data = pd.read_excel('Data Jarak antar rute.xlsx')
 
 # Vessel selection
