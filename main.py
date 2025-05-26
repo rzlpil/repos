@@ -28,46 +28,47 @@ pod = st.selectbox(
     "IDDOB", "IDBLW", "IDKTG", "IDSRI", "IDTIM", "IDMKQ", "IDOKI", "IDPER",
     "IDDOK", "IDBTW", "IDSRG", "IDBOE", "IDPDG", "IDBKS", "IDPNK", "IDBTN")
     )
-if vessel == 'PLA':
-  rpm = st.select_slider("Select RPM", options=[340.34,380,380.38])
-elif vessel == 'PNN':
-  rpm = st.select_slider("Select RPM", options=[350,400,440,460])
-elif vessel == 'REN':
-  rpm = st.select_slider("Select RPM", options=[370,390,420,430,440,450,460,470])
-elif vessel == 'RET':
-  rpm = st.select_slider("Select RPM", options=[465,468,460,470])
-elif vessel == 'TBE':
-  rpm = st.select_slider("Select RPM", options=[410])
-elif vessel == 'TFL':
-  rpm = st.select_slider("Select RPM", options=[400])
-elif vessel == 'HJE':
-  rpm = st.select_slider("Select RPM", options=[78,103,105,110,112,115])
-elif vessel == 'HSG':
-  rpm = st.select_slider("Select RPM", options=[420,425])
-  
-# Jalankan hanya jika ada file
-if uploaded_file is not None:
-    try:
-        df = pd.read_excel(uploaded_file)
 
-        # Gabungkan dan hitung
-        merged = pd.merge(df, baseline[['VESSEL', 'ME RPM (RPM)', 'mean M/E MFO per Jam']],
-                          on=['VESSEL', 'ME RPM (RPM)'], how='left')
-        merged['Duration Expected'] = merged['NMILE'] / merged['SHIP SPEED (KNOTS)']
-        merged['M/E MFO (LITER) Expected'] = merged['Duration Expected'] * merged['mean M/E MFO per Jam']
+def slider(kapal):
+    if kapal == 'PLA':
+        rpm = st.select_slider("Select RPM", options=[340.34,380,380.38])
+    elif kapal == 'PNN':
+        rpm = st.select_slider("Select RPM", options=[350,400,440,460])
+    elif kapal == 'REN':
+        rpm = st.select_slider("Select RPM", options=[370,390,420,430,440,450,460,470])
+    elif kapal == 'RET':
+        rpm = st.select_slider("Select RPM", options=[465,468,460,470])
+    elif kapal == 'TBE':
+        rpm = st.select_slider("Select RPM", options=[410])
+    elif kapal == 'TFL':
+        rpm = st.select_slider("Select RPM", options=[400])
+    elif kapal == 'HJE':
+        rpm = st.select_slider("Select RPM", options=[78,103,105,110,112,115])
+    elif kapal == 'HSG':
+        rpm = st.select_slider("Select RPM", options=[420,425])
+    return rpm
+    
+rpm = slider(vessel)
+rpm
 
-        # Konversi ke Excel
-        result_excel = convert_df_to_excel(merged)
 
-        # Tombol download
-        st.download_button(
-            label="Download Result Excel",
-            data=result_excel,
-            file_name="Result Predict.xlsx",
-            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-        )
+#         merged = pd.merge(df, baseline[['VESSEL', 'ME RPM (RPM)', 'mean M/E MFO per Jam']],
+#                           on=['VESSEL', 'ME RPM (RPM)'], how='left')
+#         merged['Duration Expected'] = merged['NMILE'] / merged['SHIP SPEED (KNOTS)']
+#         merged['M/E MFO (LITER) Expected'] = merged['Duration Expected'] * merged['mean M/E MFO per Jam']
 
-    except Exception as e:
-        st.error(f"Terjadi kesalahan saat memproses file: {e}")
-else:
-    st.info("Silakan unggah file Excel untuk diproses.")
+#         # Konversi ke Excel
+#         result_excel = convert_df_to_excel(merged)
+
+#         # Tombol download
+#         st.download_button(
+#             label="Download Result Excel",
+#             data=result_excel,
+#             file_name="Result Predict.xlsx",
+#             mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+#         )
+
+#     except Exception as e:
+#         st.error(f"Terjadi kesalahan saat memproses file: {e}")
+# else:
+#     st.info("Silakan unggah file Excel untuk diproses.")
