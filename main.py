@@ -1,5 +1,6 @@
 import streamlit as st
 import pandas as pd
+import openpyxl
 
 # Load baseline data
 baseline = pd.read_excel('23 Mei Data Baseline semua kapal.xlsx')
@@ -48,8 +49,11 @@ def slider(kapal):
         rpm = st.select_slider("Select RPM", options=[420,425])
     return rpm
     
-rpm = slider(vessel)
-rpm
+if vessel != "Choose":
+    rpm = slider(vessel)
+else:
+    rpm = None
+
 
 
 #         merged = pd.merge(df, baseline[['VESSEL', 'ME RPM (RPM)', 'mean M/E MFO per Jam']],
