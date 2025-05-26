@@ -4,6 +4,7 @@ import openpyxl
 
 # Load baseline data
 baseline = pd.read_excel('23 Mei Data Baseline semua kapal.xlsx')
+distance = pd.read_excel('Data Jarak antar rute.xlsx')
 
 vessel = st.selectbox(
     "Select Vessel",
@@ -54,9 +55,25 @@ if vessel != "Choose":
 else:
     rpm = None
 
-speed = st.number_input("Insert A Ship Speed")
+speed = st.number_input("Insert A Ship Speed (KNOT)")
 
-duration_exp = 
+distance = distance[(distance['POL']=='pol']) & (distance['POD']=='pod'])]
+distance = distance.at[0, 'NMILE']
+duration_exp = distance/speed
+mfoperjam = baseline[(baseline['VESSEL'] == vessel) & (baseline['ME RPM (RPM)'] == vessel)]
+mfoperjam = distance.at[0, 'mean M/E MFO per Jam']
+mfo_exp = duration_exp * mfoperjam
+
+# Tampilkan output dalam markdown
+if vessel != "Choose" and pol != "Choose" and pod != "Choose" and rpm is not None:
+    # Assume you've calculated duration_expected and me_mfo_expected
+    st.markdown(f"""
+    ### 🚢 Voyage Estimation
+
+    - **Duration Expected:** `{duration_exp:.2f}` hours  
+    - **M/E MFO Expected:** `{mfo_exp:,.2f}` liters
+    """)
+
 
 #         merged = pd.merge(df, baseline[['VESSEL', 'ME RPM (RPM)', 'mean M/E MFO per Jam']],
 #                           on=['VESSEL', 'ME RPM (RPM)'], how='left')
