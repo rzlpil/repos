@@ -4,94 +4,69 @@ import openpyxl
 
 # Load baseline data
 baseline = pd.read_excel('23 Mei Data Baseline semua kapal.xlsx')
-distance = pd.read_excel('Data Jarak antar rute.xlsx')
+distance_data = pd.read_excel('Data Jarak antar rute.xlsx')
 
+# Vessel selection
 vessel = st.selectbox(
     "Select Vessel",
-    ("Choose","PLA", "PNN", "REN","RET","TBE","TFL","HJE","HSG"),
+    ("Choose", "PLA", "PNN", "REN", "RET", "TBE", "TFL", "HJE", "HSG")
 )
 
-pol = st.selectbox(
-    "Select Port of Load",
-    ("Choose",
-    "IDJKT", "IDSUB", "IDMAK", "IDNBX", "IDMKW", "IDBIK", "IDAMQ", "IDRDE",
-    "IDZRI", "IDMRN", "IDTUA", "IDBIT", "IDTTE", "IDGTO", "IDTRK", "IDNNX",
-    "IDBUW", "IDKDI", "IDBTM", "IDPAL", "IDBPN", "IDBDJ", "IDFKQ", "IDMRK",
-    "IDDOB", "IDBLW", "IDKTG", "IDSRI", "IDTIM", "IDMKQ", "IDOKI", "IDPER",
-    "IDDOK", "IDBTW", "IDSRG", "IDBOE", "IDPDG", "IDBKS", "IDPNK", "IDBTN")
-    )
+# Port selections
+pol = st.selectbox("Select Port of Load", distance_data["POL"].unique().tolist())
+pod = st.selectbox("Select Port of Discharge", distance_data["POD"].unique().tolist())
 
-pod = st.selectbox(
-    "Select Port of Discard",
-    ("Choose",
-    "IDJKT", "IDSUB", "IDMAK", "IDNBX", "IDMKW", "IDBIK", "IDAMQ", "IDRDE",
-    "IDZRI", "IDMRN", "IDTUA", "IDBIT", "IDTTE", "IDGTO", "IDTRK", "IDNNX",
-    "IDBUW", "IDKDI", "IDBTM", "IDPAL", "IDBPN", "IDBDJ", "IDFKQ", "IDMRK",
-    "IDDOB", "IDBLW", "IDKTG", "IDSRI", "IDTIM", "IDMKQ", "IDOKI", "IDPER",
-    "IDDOK", "IDBTW", "IDSRG", "IDBOE", "IDPDG", "IDBKS", "IDPNK", "IDBTN")
-    )
-
+# RPM selector based on vessel
 def slider(kapal):
     if kapal == 'PLA':
-        rpm = st.select_slider("Select RPM", options=[340.34,380,380.38])
+        return st.select_slider("Select RPM", options=[340.34, 380, 380.38])
     elif kapal == 'PNN':
-        rpm = st.select_slider("Select RPM", options=[350,400,440,460])
+        return st.select_slider("Select RPM", options=[350, 400, 440, 460])
     elif kapal == 'REN':
-        rpm = st.select_slider("Select RPM", options=[370,390,420,430,440,450,460,470])
+        return st.select_slider("Select RPM", options=[370, 390, 420, 430, 440, 450, 460, 470])
     elif kapal == 'RET':
-        rpm = st.select_slider("Select RPM", options=[465,468,460,470])
+        return st.select_slider("Select RPM", options=[460, 465, 468, 470])
     elif kapal == 'TBE':
-        rpm = st.select_slider("Select RPM", options=[410])
+        return st.select_slider("Select RPM", options=[410])
     elif kapal == 'TFL':
-        rpm = st.select_slider("Select RPM", options=[400])
+        return st.select_slider("Select RPM", options=[400])
     elif kapal == 'HJE':
-        rpm = st.select_slider("Select RPM", options=[78,103,105,110,112,115])
+        return st.select_slider("Select RPM", options=[78, 103, 105, 110, 112, 115])
     elif kapal == 'HSG':
-        rpm = st.select_slider("Select RPM", options=[420,425])
-    return rpm
-    
-if vessel != "Choose":
-    rpm = slider(vessel)
-else:
-    rpm = None
+        return st.select_slider("Select RPM", options=[420, 425])
+    return None
 
-speed = st.number_input("Insert A Ship Speed (KNOT)")
+# Show slider only when vessel is selected
+rpm = slider(vessel) if vessel != "Choose" else None
 
-distance = distance[(distance['POL']=='pol']) & (distance['POD']=='pod'])]
-distance = distance.at[0, 'NMILE']
-duration_exp = distance/speed
-mfoperjam = baseline[(baseline['VESSEL'] == vessel) & (baseline['ME RPM (RPM)'] == vessel)]
-mfoperjam = distance.at[0, 'mean M/E MFO per Jam']
-mfo_exp = duration_exp * mfoperjam
+# Speed input
+speed = st.number_input("Insert Ship Speed (KNOT)", min_value=0.1, value=10.0)
 
-# Tampilkan output dalam markdown
-if vessel != "Choose" and pol != "Choose" and pod != "Choose" and rpm is not None:
-    # Assume you've calculated duration_expected and me_mfo_expected
-    st.markdown(f"""
-    ### 🚢 Voyage Estimation
+# Predict button
+if st.button("Predict"):
+    if vessel != "Choose" and pol and pod and rpm is not None:
+        # Filter distance
+        route = distance_data[(distance_data['POL'] == pol) & (distance_data['POD'] == pod)]
+        if not route.empty:
+            dist_nmile = route.iloc[0]['NMILE']
+            duration_exp = dist_nmile / speed
 
-    - **Duration Expected:** `{duration_exp:.2f}` hours  
-    - **M/E MFO Expected:** `{mfo_exp:,.2f}` liters
-    """)
+            # Get MFO per hour
+            mfo_row = baseline[(baseline['VESSEL'] == vessel) & (baseline['ME RPM (RPM)'] == rpm)]
+            if not mfo_row.empty:
+                mfoperjam = mfo_row.iloc[0]['mean M/E MFO per Jam']
+                mfo_exp = duration_exp * mfoperjam
 
+                # Display result
+                st.markdown(f"""
+                ### 🚢 Voyage Estimation
 
-#         merged = pd.merge(df, baseline[['VESSEL', 'ME RPM (RPM)', 'mean M/E MFO per Jam']],
-#                           on=['VESSEL', 'ME RPM (RPM)'], how='left')
-#         merged['Duration Expected'] = merged['NMILE'] / merged['SHIP SPEED (KNOTS)']
-#         merged['M/E MFO (LITER) Expected'] = merged['Duration Expected'] * merged['mean M/E MFO per Jam']
-
-#         # Konversi ke Excel
-#         result_excel = convert_df_to_excel(merged)
-
-#         # Tombol download
-#         st.download_button(
-#             label="Download Result Excel",
-#             data=result_excel,
-#             file_name="Result Predict.xlsx",
-#             mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-#         )
-
-#     except Exception as e:
-#         st.error(f"Terjadi kesalahan saat memproses file: {e}")
-# else:
-#     st.info("Silakan unggah file Excel untuk diproses.")
+                - **Duration Expected:** `{duration_exp:.2f}` hours  
+                - **M/E MFO Expected:** `{mfo_exp:,.2f}` liters
+                """)
+            else:
+                st.warning("No matching data for the selected vessel and RPM in baseline file.")
+        else:
+            st.warning("Route not found in distance data.")
+    else:
+        st.warning("Please select all required inputs before predicting.")
