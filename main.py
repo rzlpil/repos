@@ -9,7 +9,7 @@ def load_baseline():
 
 @st.cache_data
 def load_distance_data():
-    return pd.read_excel('Data Jarak antar rute.xlsx')
+    return pd.read_excel('Data JARAK full.xlsx')
 
 baseline = load_baseline()
 distance_data = load_distance_data()
