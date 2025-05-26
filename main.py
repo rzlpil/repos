@@ -54,7 +54,9 @@ if vessel != "Choose":
 else:
     rpm = None
 
+speed = st.number_input("Insert A Ship Speed")
 
+duration_exp = 
 
 #         merged = pd.merge(df, baseline[['VESSEL', 'ME RPM (RPM)', 'mean M/E MFO per Jam']],
 #                           on=['VESSEL', 'ME RPM (RPM)'], how='left')
