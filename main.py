@@ -2,9 +2,17 @@ import streamlit as st
 import pandas as pd
 import openpyxl
 
-# Load baseline data
-baseline = pd.read_excel('23 Mei Data Baseline semua kapal.xlsx')
-distance_data = pd.read_excel('Data Jarak antar rute.xlsx')
+# Cache for loading baseline and distance data
+@st.cache_data
+def load_baseline():
+    return pd.read_excel('23 Mei Data Baseline semua kapal.xlsx')
+
+@st.cache_data
+def load_distance_data():
+    return pd.read_excel('Data Jarak antar rute.xlsx')
+
+baseline = load_baseline()
+distance_data = load_distance_data()
 
 # Vessel selection
 vessel = st.selectbox(
@@ -16,7 +24,7 @@ vessel = st.selectbox(
 pol = st.selectbox("Select Port of Load", distance_data["POL"].unique().tolist())
 pod = st.selectbox("Select Port of Discharge", distance_data["POD"].unique().tolist())
 
-# RPM selector based on vessel
+# RPM selector
 def slider(kapal):
     if kapal == 'PLA':
         return st.select_slider("Select RPM", options=[340.34, 380, 380.38])
@@ -36,37 +44,42 @@ def slider(kapal):
         return st.select_slider("Select RPM", options=[420, 425])
     return None
 
-# Show slider only when vessel is selected
 rpm = slider(vessel) if vessel != "Choose" else None
 
 # Speed input
 speed = st.number_input("Insert Ship Speed (KNOT)", min_value=0.1, value=10.0)
 
+# Cached calculation function
+@st.cache_data
+def estimate_mfo_and_duration(vessel, pol, pod, rpm, speed):
+    route = distance_data[(distance_data['POL'] == pol) & (distance_data['POD'] == pod)]
+    if route.empty:
+        return None, None, "Route not found in distance data."
+
+    dist_nmile = route.iloc[0]['NMILE']
+    duration_exp = dist_nmile / speed
+
+    mfo_row = baseline[(baseline['VESSEL'] == vessel) & (baseline['ME RPM (RPM)'] == rpm)]
+    if mfo_row.empty:
+        return None, None, "No matching data for the selected vessel and RPM in baseline file."
+
+    mfoperjam = mfo_row.iloc[0]['mean M/E MFO per Jam']
+    mfo_exp = duration_exp * mfoperjam
+
+    return duration_exp, mfo_exp, None
+
 # Predict button
 if st.button("Predict"):
     if vessel != "Choose" and pol and pod and rpm is not None:
-        # Filter distance
-        route = distance_data[(distance_data['POL'] == pol) & (distance_data['POD'] == pod)]
-        if not route.empty:
-            dist_nmile = route.iloc[0]['NMILE']
-            duration_exp = dist_nmile / speed
-
-            # Get MFO per hour
-            mfo_row = baseline[(baseline['VESSEL'] == vessel) & (baseline['ME RPM (RPM)'] == rpm)]
-            if not mfo_row.empty:
-                mfoperjam = mfo_row.iloc[0]['mean M/E MFO per Jam']
-                mfo_exp = duration_exp * mfoperjam
-
-                # Display result
-                st.markdown(f"""
-                ### 🚢 Voyage Estimation
-
-                - **Duration Expected:** `{duration_exp:.2f}` hours  
-                - **M/E MFO Expected:** `{mfo_exp:,.2f}` liters
-                """)
-            else:
-                st.warning("No matching data for the selected vessel and RPM in baseline file.")
+        duration, mfo, error = estimate_mfo_and_duration(vessel, pol, pod, rpm, speed)
+        if error:
+            st.warning(error)
         else:
-            st.warning("Route not found in distance data.")
+            st.markdown(f"""
+            ### 🚢 Voyage Estimation
+
+            - **Duration Expected:** `{duration:.2f}` hours  
+            - **M/E MFO Expected:** `{mfo:,.2f}` liters
+            """)
     else:
         st.warning("Please select all required inputs before predicting.")
