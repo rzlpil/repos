@@ -79,7 +79,7 @@ def estimate_mfo_and_duration(vessel, pol, pod, rpm, speed):
     return duration_exp, mfo_exp, None
 
 # Tombol prediksi
-if st.button("📊 Hitung Estimasi"):
+if st.button("📊 Hitung Estimasi",type="primary"):
     if vessel != "Choose" and pol and pod and rpm is not None:
         duration, mfo, error = estimate_mfo_and_duration(vessel, pol, pod, rpm, speed)
         if error:
