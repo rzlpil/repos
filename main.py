@@ -3,7 +3,7 @@ import pandas as pd
 import openpyxl
 
 # Konfigurasi halaman dan tema
-st.set_page_config(page_title="Estimasi Konsumsi MFO", page_icon="🚢🛢️", layout="wide")
+st.set_page_config(page_title="Estimasi Konsumsi MFO", page_icon="🚢🛢️", layout="centered")
 
 # Header dengan logo dan judul
 col1, col2 = st.columns([1, 9])
