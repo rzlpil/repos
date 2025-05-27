@@ -8,7 +8,7 @@ st.set_page_config(page_title="Estimasi Konsumsi MFO", page_icon="🚢🛢️", 
 # Header dengan logo dan judul
 col1, col2 = st.columns([1, 9])
 with col1:
-    st.image("logo.png", width=80)  # Ganti sesuai file logo Anda
+    st.image("Logospil.png", width=100)  # Ganti sesuai file logo Anda
 with col2:
     st.markdown("""
         <h1 style='color:#0b9d45; font-size: 36px; margin-bottom: 0;'>Estimasi Konsumsi M/E MFO</h1>
