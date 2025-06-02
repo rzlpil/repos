@@ -45,7 +45,8 @@ def rpm_slider(kapal):
     elif kapal == 'RET':
         return st.select_slider("🔧 Pilih RPM", options=[440, 465, 468, 470, 475])
     elif kapal == 'TBE':
-        return st.select_slider("🔧 Pilih RPM", options=[0,410])
+        st.markdown("🔧 RPM: 410")
+        return 410
     elif kapal == 'TFL':
         return st.select_slider("🔧 Pilih RPM", options=[0,400])
     elif kapal == 'HJE':
