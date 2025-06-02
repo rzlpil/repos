@@ -48,7 +48,8 @@ def rpm_slider(kapal):
         st.markdown("🔧 RPM: 410")
         return 410
     elif kapal == 'TFL':
-        return st.select_slider("🔧 Pilih RPM", options=[0,400])
+        st.markdown("🔧 RPM: 400")
+        return 400
     elif kapal == 'HJE':
         return st.select_slider("🔧 Pilih RPM", options=[78, 103, 105, 110, 112, 115])
     elif kapal == 'HSG':
